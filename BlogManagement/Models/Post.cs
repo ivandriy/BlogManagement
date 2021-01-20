@@ -1,14 +1,12 @@
 using System;
-using System.ComponentModel.DataAnnotations;
 
 namespace BlogManagement.Models
 {
     public class Post
     {
         public int Id { get; set; }
-        public string Name { get; set; }
-        public string Topic { get; set; }
-        public string Body { get; set; }
+        public string Title { get; set; }
+        public string Content { get; set; }
         public DateTime CreatedOn { get; set; }
         public DateTime UpdatedOn { get; set; }
         public User CreatedBy { get; set; }

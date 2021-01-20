@@ -36,6 +36,7 @@ namespace BlogManagement
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "ClientApp/build"; });
 
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IBlogService, BlogService>();
 
             services.AddSwaggerGen();
         }
