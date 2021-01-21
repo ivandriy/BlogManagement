@@ -15,8 +15,12 @@ namespace BlogManagement.Abstract
         
         Task<Blog> GetBlog(int blogId);
 
+        Task<IEnumerable<Post>> GetAllBlogPosts(int blogId);
+
+        Task<Post> GetPost(int postId);
+        
         Task AddNewPost(string title, string body, int blogId);
-        Task RemovePost(int postId, int blogId);
-        Task UpdatePost(int postId, int blogId, string title, string body);
+        Task RemovePost(int postId);
+        Task UpdatePost(int postId, string title, string body);
     }
 }

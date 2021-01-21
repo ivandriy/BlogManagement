@@ -1,5 +1,6 @@
 using BlogManagement.Abstract;
 using BlogManagement.DataAccess;
+using BlogManagement.Infrastructure;
 using BlogManagement.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -35,6 +36,7 @@ namespace BlogManagement
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "ClientApp/build"; });
 
+            services.AddSingleton<ISystemClock, SystemClock>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IBlogService, BlogService>();
 

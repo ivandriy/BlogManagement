@@ -3,15 +3,17 @@ using System;
 using BlogManagement.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace BlogManagement.Migrations
 {
     [DbContext(typeof(BlogDbContext))]
-    partial class BlogDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210121170727_SetNullableDateTimeForPost")]
+    partial class SetNullableDateTimeForPost
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -50,8 +52,9 @@ namespace BlogManagement.Migrations
                     b.Property<int?>("CreatedById")
                         .HasColumnType("integer");
 
-                    b.Property<DateTimeOffset?>("CreatedOn")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateTime?>("CreatedOn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Title")
                         .HasColumnType("text");
@@ -59,8 +62,9 @@ namespace BlogManagement.Migrations
                     b.Property<int?>("UpdatedById")
                         .HasColumnType("integer");
 
-                    b.Property<DateTimeOffset?>("UpdatedOn")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateTime?>("UpdatedOn")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp without time zone");
 
                     b.HasKey("Id");
 
