@@ -1,6 +1,6 @@
 using BlogManagement.Abstract;
 using BlogManagement.DataAccess;
-using BlogManagement.DTO;
+using BlogManagement.DTO.Request;
 using BlogManagement.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -20,25 +20,24 @@ namespace BlogManagement.Services
 
         public async Task<IEnumerable<User>> GetAllUsersAsync() => await _dbContext.Users.ToArrayAsync();
 
-        public async Task<User> GetUserAsync(int id) => await _dbContext.Users.Where(u => u.Id == id).SingleOrDefaultAsync();
+        public async Task<User> GetUserAsync(int id) => await _dbContext.Users.Include(u => u.Posts).Where(u => u.UserId == id).SingleOrDefaultAsync();
+        
+        public async Task<User> GetUserAsync(string email) => await _dbContext.Users.Include(u => u.Posts).Where(u => u.Email == email).SingleOrDefaultAsync();
 
-        public async Task AddOrUpdateUserAsync(CreateUpdateUser user)
+        public async Task<User> AddUserAsync(CreateUpdateUser user)
         {
-            var existingUser = await _dbContext.Users.SingleOrDefaultAsync(u => u.Email == user.Email);
-            if (existingUser != null)
-            {
-                // Update user
-                existingUser.FirstName = user.FirstName;
-                existingUser.LastName = user.LastName;
-            }
-            else
-            {
-                //Create new user
-                var newUser = new User { FirstName = user.FirstName, LastName = user.LastName, Email = user.Email };
-                await _dbContext.Users.AddAsync(newUser);
-            }
-
+            var newUser = new User { FirstName = user.FirstName, LastName = user.LastName, Email = user.Email };
+            await _dbContext.Users.AddAsync(newUser);
             await _dbContext.SaveChangesAsync();
+            return newUser;
+        }
+        public async Task<User> UpdateUserAsync(CreateUpdateUser user)
+        {
+            var existingUser = await _dbContext.Users.Include(u => u.Posts).SingleOrDefaultAsync(u => u.Email == user.Email);
+            existingUser.FirstName = user.FirstName;
+            existingUser.LastName = user.LastName;
+            await _dbContext.SaveChangesAsync();
+            return existingUser;
         }
     }
 }

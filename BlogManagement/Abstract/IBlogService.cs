@@ -1,3 +1,4 @@
+using BlogManagement.DTO.Request;
 using BlogManagement.Models;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,8 +8,8 @@ namespace BlogManagement.Abstract
 {
     public interface IBlogService
     {
-        Task AddBlog(string name);
-        Task UpdateBlog(int blogId, string name);
+        Task<Blog> AddBlog(string name);
+        Task<Blog> UpdateBlog(int blogId, string name);
         Task RemoveBlog(int blogId);
 
         Task<IEnumerable<Blog>> GetAllBlogs();
@@ -19,8 +20,8 @@ namespace BlogManagement.Abstract
 
         Task<Post> GetPost(int postId);
         
-        Task AddNewPost(string title, string body, int blogId);
+        Task<Post> AddNewPost(CreatePost post);
         Task RemovePost(int postId);
-        Task UpdatePost(int postId, string title, string body);
+        Task<Post> UpdatePost(int postId, UpdatePost postUpd);
     }
 }

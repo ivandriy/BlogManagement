@@ -1,5 +1,5 @@
 using BlogManagement.Abstract;
-using BlogManagement.DTO;
+using BlogManagement.DTO.Request;
 using BlogManagement.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -20,15 +20,38 @@ namespace BlogManagement.Controllers
         
         [HttpGet]
         [Route("{userId}")]
-        public async Task<User> GetSingleUser([FromRoute]int userId) => await _userService.GetUserAsync(userId);
+        public async Task<ActionResult<User>> GetSingleUser([FromRoute]int userId)
+        {
+            var result = await _userService.GetUserAsync(userId);
+            return result == null ? NotFound($"User with id {userId} is not exist") : Ok(result);
+        }
 
         [HttpGet]
-        public async Task<IEnumerable<User>> GetAllUsers() => await _userService.GetAllUsersAsync();
+        public async Task<ActionResult<IEnumerable<User>>> GetAllUsers()
+        {
+            var result = await _userService.GetAllUsersAsync();
+            return Ok(result);
+        }
 
         [HttpPost]
-        public async Task AddOrUpdateUser([FromBody] CreateUpdateUser user)
+        public async Task<ActionResult<User>> AddUser([FromBody] CreateUpdateUser user)
         {
-            await _userService.AddOrUpdateUserAsync(user);
+            if (!ModelState.IsValid) return BadRequest();
+            var existingUser = await _userService.GetUserAsync(user.Email);
+            if (existingUser != null) return BadRequest($"User with email {user.Email} already exist");
+            var result = await _userService.AddUserAsync(user);
+            return Ok(result);
+
+        }
+        
+        [HttpPut]
+        public async Task<ActionResult<User>> UpdateUser([FromBody] CreateUpdateUser user)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+            var existingUser = await _userService.GetUserAsync(user.Email);
+            if (existingUser == null) return BadRequest($"User with email {user.Email} is not exist");
+            var result= await _userService.UpdateUserAsync(user);
+            return Ok(result);
         }
     }
 }

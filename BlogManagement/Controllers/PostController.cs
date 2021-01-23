@@ -1,5 +1,5 @@
 using BlogManagement.Abstract;
-using BlogManagement.DTO;
+using BlogManagement.DTO.Request;
 using BlogManagement.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -32,28 +32,37 @@ namespace BlogManagement.Controllers
         public async Task<ActionResult<IEnumerable<Post>>> GetAllBlogPosts([FromRoute]int blogId)
         {
             var result = await _blogService.GetAllBlogPosts(blogId);
-            if (result == null) return NotFound(blogId);
+            if (result == null) return NotFound($"Blog with id {blogId} is not exist");
             return Ok(result);
         }
 
         [HttpPost]
-        public async Task AddPost([FromBody] CreateUpdatePost post)
+        public async Task<ActionResult<Post>> AddPost([FromBody] CreatePost post)
         {
-            await _blogService.AddNewPost(post.Title, post.Body, post.BlogId);
+            var existingBlog = await _blogService.GetBlog(post.BlogId);
+            if(existingBlog == null) return BadRequest($"Blog with id {post.BlogId} is not exist");
+            var result = await _blogService.AddNewPost(post);
+            return Ok(result);
         }
         
         [HttpPut]
         [Route("{postId}")]
-        public async Task UpdatePost([FromRoute] int postId, [FromBody] CreateUpdatePost post)
+        public async Task<ActionResult<Post>> UpdatePost([FromRoute] int postId, [FromBody] UpdatePost post)
         {
-            await _blogService.UpdatePost(postId, post.Title, post.Body);
+            var existingPost = await _blogService.GetPost(postId);
+            if(existingPost == null) return BadRequest($"Post with id {postId} is not exist");
+            var result = await _blogService.UpdatePost(postId, post);
+            return Ok(result);
         }
         
         [HttpDelete]
         [Route("{postId}")]
-        public async Task RemovePost([FromRoute] int postId)
+        public async Task<ActionResult> RemovePost([FromRoute] int postId)
         {
+            var existingPost = await _blogService.GetPost(postId);
+            if(existingPost == null) return BadRequest($"Post with id {postId} is not exist");
             await _blogService.RemovePost(postId);
+            return Ok();
         }
     }
 }

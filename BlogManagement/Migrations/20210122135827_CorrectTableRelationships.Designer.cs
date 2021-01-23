@@ -3,15 +3,17 @@ using System;
 using BlogManagement.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace BlogManagement.Migrations
 {
     [DbContext(typeof(BlogDbContext))]
-    partial class BlogDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210122135827_CorrectTableRelationships")]
+    partial class CorrectTableRelationships
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -75,6 +77,9 @@ namespace BlogManagement.Migrations
                         .HasColumnType("integer")
                         .UseIdentityByDefaultColumn();
 
+                    b.Property<int>("BlogId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
@@ -85,6 +90,9 @@ namespace BlogManagement.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("UserId");
+
+                    b.HasIndex("BlogId")
+                        .IsUnique();
 
                     b.HasIndex("Email")
                         .IsUnique();
@@ -111,9 +119,22 @@ namespace BlogManagement.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("BlogManagement.Models.User", b =>
+                {
+                    b.HasOne("BlogManagement.Models.Blog", "Blog")
+                        .WithOne("BlogUser")
+                        .HasForeignKey("BlogManagement.Models.User", "BlogId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Blog");
+                });
+
             modelBuilder.Entity("BlogManagement.Models.Blog", b =>
                 {
                     b.Navigation("BlogPosts");
+
+                    b.Navigation("BlogUser");
                 });
 
             modelBuilder.Entity("BlogManagement.Models.User", b =>
