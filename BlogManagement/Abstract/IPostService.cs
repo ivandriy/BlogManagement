@@ -16,5 +16,17 @@ namespace BlogManagement.Abstract
         Task RemovePost(int postId);
         
         Task<Post> UpdatePost(int postId, CreateUpdatePost postUpd);
+
+        Task<Category> GetCategory(int categoryId);
+
+        Task<Category> GetCategory(string categoryName);
+
+        Task<IEnumerable<Category>> GetAllCategories();
+
+        Task<Category> AddCategory(string categoryName);
+
+        Task<Category> UpdateCategory(int categoryId, string categoryName);
+
+        Task RemoveCategory(int categoryId);
     }
 }

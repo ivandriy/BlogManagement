@@ -95,9 +95,7 @@ namespace BlogManagement.Services
         
         public async Task<Author> AddAuthor(Author author)
         {
-            var existingBlog = await _dbContext.Blogs.FindAsync(author.BlogId);
-            await _dbContext.Entry(existingBlog).Reference(b => b.BlogAuthor).LoadAsync();
-            existingBlog.BlogAuthor = author;
+            await _dbContext.Authors.AddAsync(author);
             await _dbContext.SaveChangesAsync();
             return author;
         }

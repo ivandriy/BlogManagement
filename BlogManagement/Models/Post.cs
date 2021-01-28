@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace BlogManagement.Models
@@ -23,6 +25,14 @@ namespace BlogManagement.Models
         public string UserName { get; set; }
         
         //Many-to-many relationship to Category
+        [JsonIgnore]
         public List<Category> Categories { get; set; }
+
+        [NotMapped]
+        public List<string> CategoriesNames {
+            get
+            {
+                return Categories.Select(c => c.Name).ToList();
+            } }
     }
 }

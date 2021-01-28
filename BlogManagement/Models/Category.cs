@@ -1,7 +1,12 @@
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace BlogManagement.Models
 {
+    [Index(nameof(Name), IsUnique = true)]
     public class Category
     {
         public Category()
@@ -13,6 +18,16 @@ namespace BlogManagement.Models
         public string Name { get; set; }
         
         // Many-to-many relationship to Post
+        [JsonIgnore]
         public List<Post> CategoryPosts { get; set; }
+
+        [NotMapped]
+        public List<int> CategoryPostIds
+        {
+            get
+            {
+                return CategoryPosts.Select(p => p.PostId).ToList();
+            }
+        }
     }
 }

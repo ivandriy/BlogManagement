@@ -23,6 +23,15 @@ namespace BlogManagement.Controllers
             _blogService = blogService;
         }
 
+        #region Post
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Post>>> GetAllPosts()
+        {
+            var result = await _postService.GetAllPosts();
+            return Ok(result);
+        }
+        
         [HttpGet]
         [Route("{postId}")]
         public async Task<ActionResult<Post>> GetPost([FromRoute] int postId)
@@ -31,14 +40,6 @@ namespace BlogManagement.Controllers
             if (result == null) return NotFound(postId);
             return Ok(result);
         }
-
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Post>>> GetAllPosts()
-        {
-            var result = await _postService.GetAllPosts();
-            return Ok(result);
-        }
-
 
         [HttpPost]
         public async Task<ActionResult<Post>> AddPost([FromBody] CreateUpdatePost post)
@@ -71,5 +72,62 @@ namespace BlogManagement.Controllers
             await _postService.RemovePost(postId);
             return Ok();
         }
+
+        #endregion
+
+        #region Category
+
+        [HttpGet]
+        [Route("Category")]
+        public async Task<ActionResult<IEnumerable<Category>>> GetAllCategories()
+        {
+            var result = await _postService.GetAllCategories();
+            return Ok(result);
+        }
+        
+        [HttpGet]
+        [Route("Category/{categoryId}")]
+        public async Task<ActionResult<Category>> GetCategory([FromRoute] int categoryId)
+        {
+            var result = await _postService.GetCategory(categoryId);
+            if (result == null) return NotFound(categoryId);
+            return Ok(result);
+        }
+        
+        [HttpPost]
+        [Route("Category")]
+        public async Task<ActionResult<Category>> AddCategory([FromQuery] string categoryName)
+        {
+            var existingCategory = await _postService.GetCategory(categoryName);
+            if (existingCategory != null)
+                return BadRequest($"Category with name {categoryName} already exists");
+            var result = await _postService.AddCategory(categoryName);
+            return Ok(result);
+        }
+        
+        [HttpPut]
+        [Route("Category/{categoryId}")]
+        public async Task<ActionResult<Category>> UpdateCategory([FromRoute] int categoryId, [FromQuery] string categoryName)
+        {
+            var existingCategory = await _postService.GetCategory(categoryId);
+            if (existingCategory == null)
+                return BadRequest($"Category with id {categoryId} doesn't exist");
+            var result = await _postService.UpdateCategory(categoryId, categoryName);
+            return Ok(result);
+        }
+        
+        [HttpDelete]
+        [Route("Category/{categoryId}")]
+        public async Task<ActionResult> RemoveCategory([FromRoute] int categoryId)
+        {
+            var existingCategory = await _postService.GetCategory(categoryId);
+            if (existingCategory == null)
+                return BadRequest($"Category with id {categoryId} doesn't exist");
+            await _postService.RemoveCategory(categoryId);
+            return Ok();
+        }
+
+        #endregion
+
     }
 }
