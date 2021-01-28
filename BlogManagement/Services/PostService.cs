@@ -3,7 +3,6 @@ using BlogManagement.DataAccess;
 using BlogManagement.DTO.Request;
 using BlogManagement.Models;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -23,13 +22,14 @@ namespace BlogManagement.Services
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task<Post> GetPost(int postId) => await _dbContext.Posts.SingleOrDefaultAsync(p => p.PostId == postId);
+    public async Task<Post> GetPost(int postId) => await _dbContext.Posts.FindAsync(postId);
 
     public async Task<Post> AddNewPost(CreatePost post)
     {
-        var existingBlog = await _dbContext.Blogs.Include(b => b.BlogPosts).SingleOrDefaultAsync(b => b.BlogId == post.BlogId);
+        var existingBlog = await _dbContext.Blogs.FindAsync(post.BlogId);
+        await _dbContext.Entry(existingBlog).Collection(b => b.BlogPosts).LoadAsync();
         var currDateTime = _clock.GetCurrentDateTime();
-        string userName = string.Empty;
+        var userName = string.Empty;
         if (_httpContextAccessor.HttpContext != null)
         {
             userName = _httpContextAccessor.HttpContext.User.FindFirst(claim => claim.Type == ClaimTypes.Email)?.Value;
@@ -51,14 +51,14 @@ namespace BlogManagement.Services
 
     public async Task RemovePost(int postId)
     {
-        var postToRemove = await _dbContext.Posts.SingleOrDefaultAsync(p => p.PostId == postId);
+        var postToRemove = await _dbContext.Posts.FindAsync(postId);
         _dbContext.Remove(postToRemove);
         await _dbContext.SaveChangesAsync();
     }
 
     public async Task<Post> UpdatePost(int postId, UpdatePost post)
     {
-        var postToUpdate = await _dbContext.Posts.SingleOrDefaultAsync(p => p.PostId == postId);
+        var postToUpdate = await _dbContext.Posts.FindAsync(postId);
         postToUpdate.Title = post.Title;
         postToUpdate.Content = post.Body;
         postToUpdate.UpdatedOn = _clock.GetCurrentDateTime();

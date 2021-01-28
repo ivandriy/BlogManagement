@@ -8,7 +8,7 @@ namespace BlogManagement.Abstract
     {
         Task<Blog> AddBlog(string name);
         
-        Task<Blog> UpdateBlog(int blogId, string name);
+        Task<Blog> UpdateBlog(int blogId, string name, string themeName);
         
         Task RemoveBlog(int blogId);
 

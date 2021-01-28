@@ -55,11 +55,11 @@ namespace BlogManagement.Controllers
         
         [HttpPut]
         [Route("{blogId}")]
-        public async Task<ActionResult<Blog>> UpdateBlog([FromRoute]int blogId, [FromQuery]string blogName)
+        public async Task<ActionResult<Blog>> UpdateBlog([FromRoute]int blogId, [FromQuery]string blogName, [FromQuery]string themeName)
         {
             var existingBlog = await _blogService.GetBlog(blogId);
             if (existingBlog == null) return BadRequest($"Blog with id {blogId} is not exist");
-            var result = await _blogService.UpdateBlog(blogId, blogName);
+            var result = await _blogService.UpdateBlog(blogId, blogName, themeName);
             return Ok(result);
         }
         
