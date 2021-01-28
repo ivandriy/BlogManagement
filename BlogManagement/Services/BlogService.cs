@@ -1,11 +1,8 @@
 using BlogManagement.Abstract;
 using BlogManagement.DataAccess;
-using BlogManagement.DTO.Request;
 using BlogManagement.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace BlogManagement.Services
@@ -13,16 +10,13 @@ namespace BlogManagement.Services
     public class BlogService : IBlogService
     {
         private readonly BlogDbContext _dbContext;
-        private readonly ISystemClock _clock;
-        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public BlogService(BlogDbContext dbContext, ISystemClock clock, IHttpContextAccessor httpContextAccessor)
+        public BlogService(BlogDbContext dbContext)
         {
             _dbContext = dbContext;
-            _clock = clock;
-            _httpContextAccessor = httpContextAccessor;
         }
-        
+
+        #region Blog
         public async Task<Blog> AddBlog(string name)
         {
             var newBlog = new Blog { Name = name };
@@ -53,7 +47,12 @@ namespace BlogManagement.Services
 
         public async Task<IEnumerable<Blog>> GetAllBlogs() => await _dbContext.Blogs.ToArrayAsync();
 
-        public async Task<Blog> GetBlog(int blogId) => await _dbContext.Blogs.Include(b => b.BlogPosts).SingleOrDefaultAsync(b => b.BlogId == blogId);
+        public async Task<Blog> GetBlog(int blogId) => 
+            await _dbContext.Blogs
+                .Include(b => b.BlogPosts)
+                .Include(b => b.BlogAuthor)
+                .Include(b => b.Theme)
+                .SingleOrDefaultAsync(b => b.BlogId == blogId);
 
         public async Task<IEnumerable<Post>> GetAllBlogPosts(int blogId)
         {
@@ -61,47 +60,75 @@ namespace BlogManagement.Services
             return blog?.BlogPosts;
         }
 
-        public async Task<Post> GetPost(int postId) => await _dbContext.Posts.SingleOrDefaultAsync(p => p.PostId == postId);
+        #endregion
+        
+        #region Author
+        public async Task<Author> GetAuthor(int authorId) => await _dbContext.Authors.SingleOrDefaultAsync(a => a.AuthorId == authorId);
+        
+        public async Task<Author> GetAuthor(string email) => await _dbContext.Authors.SingleOrDefaultAsync(a => a.Email == email);
 
-        public async Task<Post> AddNewPost(CreatePost post)
+        public async Task<IEnumerable<Author>> GetAllAuthors() => await _dbContext.Authors.ToArrayAsync();
+        
+        public async Task<Author> AddAuthor(Author author)
         {
-            var existingBlog = await _dbContext.Blogs.Include(b => b.BlogPosts).SingleOrDefaultAsync( b => b.BlogId == post.BlogId);
-            var currDateTime = _clock.GetCurrentDateTime();
-            string userName = string.Empty;
-            if (_httpContextAccessor.HttpContext != null)
-            {
-                userName = _httpContextAccessor.HttpContext.User.FindFirst(claim => claim.Type == ClaimTypes.Email)?.Value;
-            }
-
-            var newPost = new Post
-            {
-                Title = post.Title,
-                Content = post.Body,
-                CreatedOn = currDateTime,
-                UpdatedOn = currDateTime,
-                UserName = userName
-            };
-
-           existingBlog.BlogPosts.Add(newPost);
-           await _dbContext.SaveChangesAsync();
-           return newPost;
+            var existingBlog = await _dbContext.Blogs.SingleOrDefaultAsync(b => b.BlogId == author.BlogId);
+            existingBlog.BlogAuthor = author;
+            await _dbContext.SaveChangesAsync();
+            return author;
+        }
+        
+        public async Task<Author> UpdateAuthorDetails(Author author)
+        {
+            var existingAuthor = await _dbContext.Authors.SingleOrDefaultAsync(a => a.Email == author.Email);
+            existingAuthor.FirstName = author.FirstName;
+            existingAuthor.LastName = author.LastName;
+            
+            await _dbContext.SaveChangesAsync();
+            return existingAuthor;
         }
 
-        public async Task RemovePost(int postId)
+        public async Task RemoveAuthor(int authorId)
         {
-            var postToRemove = await _dbContext.Posts.SingleOrDefaultAsync(p => p.PostId == postId);
-            _dbContext.Remove(postToRemove);
+            var existingAuthor = await _dbContext.Authors.SingleOrDefaultAsync(a => a.AuthorId == authorId);
+            if (existingAuthor == null)
+                return;
+            var blog = await _dbContext.Blogs.SingleOrDefaultAsync(b => b.BlogId == existingAuthor.BlogId);
+            blog.BlogAuthor = null;
+            _dbContext.Authors.Remove(existingAuthor);
             await _dbContext.SaveChangesAsync();
         }
+        #endregion
 
-        public async Task<Post> UpdatePost(int postId, UpdatePost post)
+        #region Theme
+        public async Task<Theme> GetTheme(int themeId) => await _dbContext.Themes.SingleOrDefaultAsync(t => t.ThemeId == themeId);
+        
+        public async Task<Theme> GetTheme(string themeName) => await _dbContext.Themes.SingleOrDefaultAsync(t => t.ThemeName == themeName);
+
+        public async Task<IEnumerable<Theme>> GetAllThemes() => await _dbContext.Themes.ToArrayAsync();
+
+        public async Task<Theme> AddTheme(string themeName)
         {
-            var postToUpdate = await _dbContext.Posts.SingleOrDefaultAsync(p => p.PostId == postId);
-            postToUpdate.Title = post.Title;
-            postToUpdate.Content = post.Body;
-            postToUpdate.UpdatedOn = _clock.GetCurrentDateTime();
+            var newTheme = new Theme { ThemeName = themeName };
+            await _dbContext.Themes.AddAsync(newTheme);
             await _dbContext.SaveChangesAsync();
-            return postToUpdate;
+            return newTheme;
         }
+        
+        public async Task<Theme> UpdateTheme(Theme theme)
+        {
+            var existingTheme = await _dbContext.Themes.SingleOrDefaultAsync(t => t.ThemeId == theme.ThemeId);
+            existingTheme.ThemeName = theme.ThemeName;
+            await _dbContext.SaveChangesAsync();
+            return existingTheme;
+        }
+        
+        public async Task RemoveTheme(int themeId)
+        {
+            var existingTheme = await _dbContext.Themes.SingleOrDefaultAsync(t => t.ThemeId == themeId);
+            _dbContext.Themes.Remove(existingTheme);
+            await _dbContext.SaveChangesAsync();
+        }
+        
+        #endregion
     }
 }

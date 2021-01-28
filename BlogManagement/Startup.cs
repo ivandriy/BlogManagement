@@ -74,6 +74,7 @@ namespace BlogManagement
 
             services.AddSingleton<ISystemClock, SystemClock>();
             services.AddScoped<IBlogService, BlogService>();
+            services.AddScoped<IPostService, PostService>();
 
             services.AddSwaggerGen();
         }

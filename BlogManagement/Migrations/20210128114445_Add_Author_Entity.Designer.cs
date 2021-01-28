@@ -3,15 +3,17 @@ using System;
 using BlogManagement.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace BlogManagement.Migrations
 {
     [DbContext(typeof(BlogDbContext))]
-    partial class BlogDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210128114445_Add_Author_Entity")]
+    partial class Add_Author_Entity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -29,24 +31,15 @@ namespace BlogManagement.Migrations
                     b.Property<int>("BlogId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("FirstName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("LastName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("AuthorId");
 
                     b.HasIndex("BlogId")
-                        .IsUnique();
-
-                    b.HasIndex("Email")
                         .IsUnique();
 
                     b.ToTable("Authors");
@@ -127,13 +120,9 @@ namespace BlogManagement.Migrations
                         .UseIdentityByDefaultColumn();
 
                     b.Property<string>("ThemeName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("ThemeId");
-
-                    b.HasIndex("ThemeName")
-                        .IsUnique();
 
                     b.ToTable("Themes");
                 });

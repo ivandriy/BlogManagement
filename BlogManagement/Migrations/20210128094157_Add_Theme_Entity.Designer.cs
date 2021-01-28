@@ -3,54 +3,23 @@ using System;
 using BlogManagement.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace BlogManagement.Migrations
 {
     [DbContext(typeof(BlogDbContext))]
-    partial class BlogDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210128094157_Add_Theme_Entity")]
+    partial class Add_Theme_Entity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .UseIdentityByDefaultColumns()
                 .HasAnnotation("Relational:MaxIdentifierLength", 63)
                 .HasAnnotation("ProductVersion", "5.0.2");
-
-            modelBuilder.Entity("BlogManagement.Models.Author", b =>
-                {
-                    b.Property<int>("AuthorId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
-
-                    b.Property<int>("BlogId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("AuthorId");
-
-                    b.HasIndex("BlogId")
-                        .IsUnique();
-
-                    b.HasIndex("Email")
-                        .IsUnique();
-
-                    b.ToTable("Authors");
-                });
 
             modelBuilder.Entity("BlogManagement.Models.Blog", b =>
                 {
@@ -70,21 +39,6 @@ namespace BlogManagement.Migrations
                     b.HasIndex("ThemeId");
 
                     b.ToTable("Blogs");
-                });
-
-            modelBuilder.Entity("BlogManagement.Models.Category", b =>
-                {
-                    b.Property<int>("CategoryId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.HasKey("CategoryId");
-
-                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("BlogManagement.Models.Post", b =>
@@ -127,30 +81,11 @@ namespace BlogManagement.Migrations
                         .UseIdentityByDefaultColumn();
 
                     b.Property<string>("ThemeName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("ThemeId");
 
-                    b.HasIndex("ThemeName")
-                        .IsUnique();
-
                     b.ToTable("Themes");
-                });
-
-            modelBuilder.Entity("CategoryPost", b =>
-                {
-                    b.Property<int>("CategoriesCategoryId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("CategoryPostsPostId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("CategoriesCategoryId", "CategoryPostsPostId");
-
-                    b.HasIndex("CategoryPostsPostId");
-
-                    b.ToTable("PostCategoriesMapping");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -351,15 +286,6 @@ namespace BlogManagement.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
-            modelBuilder.Entity("BlogManagement.Models.Author", b =>
-                {
-                    b.HasOne("BlogManagement.Models.Blog", null)
-                        .WithOne("BlogAuthor")
-                        .HasForeignKey("BlogManagement.Models.Author", "BlogId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("BlogManagement.Models.Blog", b =>
                 {
                     b.HasOne("BlogManagement.Models.Theme", "Theme")
@@ -378,21 +304,6 @@ namespace BlogManagement.Migrations
                         .IsRequired();
 
                     b.Navigation("Blog");
-                });
-
-            modelBuilder.Entity("CategoryPost", b =>
-                {
-                    b.HasOne("BlogManagement.Models.Category", null)
-                        .WithMany()
-                        .HasForeignKey("CategoriesCategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BlogManagement.Models.Post", null)
-                        .WithMany()
-                        .HasForeignKey("CategoryPostsPostId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -448,8 +359,6 @@ namespace BlogManagement.Migrations
 
             modelBuilder.Entity("BlogManagement.Models.Blog", b =>
                 {
-                    b.Navigation("BlogAuthor");
-
                     b.Navigation("BlogPosts");
                 });
 #pragma warning restore 612, 618
