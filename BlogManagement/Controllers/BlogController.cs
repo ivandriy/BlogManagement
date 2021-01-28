@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace BlogManagement.Controllers
@@ -44,6 +45,26 @@ namespace BlogManagement.Controllers
             var result = await _blogService.GetAllBlogPosts(blogId);
             if (result == null) return NotFound($"Blog with id {blogId} is not exist");
             return Ok(result);
+        }
+        
+        [HttpPost]
+        [Route("{blogId}/Posts")]
+        public async Task<ActionResult<IEnumerable<Post>>> AddPostsToBlog([FromRoute]int blogId, [FromBody]int[] postIds)
+        {
+            var existingBlog = await _blogService.GetBlog(blogId);
+            if (existingBlog == null) return BadRequest($"Blog with id {blogId} is not exist");
+            await _blogService.AddPostsToBlog(blogId, postIds.ToArray());
+            return Ok();
+        }
+        
+        [HttpDelete]
+        [Route("{blogId}/Posts")]
+        public async Task<ActionResult<IEnumerable<Post>>> RemovePostsFromBlog([FromRoute]int blogId, [FromBody]int[] postIds)
+        {
+            var existingBlog = await _blogService.GetBlog(blogId);
+            if (existingBlog == null) return BadRequest($"Blog with id {blogId} is not exist");
+            await _blogService.RemovePostsFromBlog(blogId, postIds.ToArray());
+            return Ok();
         }
 
         [HttpPost]

@@ -3,6 +3,8 @@ using BlogManagement.DataAccess;
 using BlogManagement.DTO.Request;
 using BlogManagement.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -23,11 +25,11 @@ namespace BlogManagement.Services
     }
 
     public async Task<Post> GetPost(int postId) => await _dbContext.Posts.FindAsync(postId);
+    
+    public async Task<IEnumerable<Post>> GetAllPosts() => await _dbContext.Posts.ToArrayAsync();
 
-    public async Task<Post> AddNewPost(CreatePost post)
+    public async Task<Post> AddNewPost(CreateUpdatePost post)
     {
-        var existingBlog = await _dbContext.Blogs.FindAsync(post.BlogId);
-        await _dbContext.Entry(existingBlog).Collection(b => b.BlogPosts).LoadAsync();
         var currDateTime = _clock.GetCurrentDateTime();
         var userName = string.Empty;
         if (_httpContextAccessor.HttpContext != null)
@@ -43,8 +45,18 @@ namespace BlogManagement.Services
             UpdatedOn = currDateTime,
             UserName = userName
         };
-
-        existingBlog.BlogPosts.Add(newPost);
+        
+        if (post.BlogId != 0)
+        {
+            var existingBlog = await _dbContext.Blogs.FindAsync(post.BlogId);
+            await _dbContext.Entry(existingBlog).Collection(b => b.BlogPosts).LoadAsync();
+            existingBlog.BlogPosts.Add(newPost);
+        }
+        else
+        {
+            await _dbContext.Posts.AddAsync(newPost);
+        }
+        
         await _dbContext.SaveChangesAsync();
         return newPost;
     }
@@ -56,7 +68,7 @@ namespace BlogManagement.Services
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task<Post> UpdatePost(int postId, UpdatePost post)
+    public async Task<Post> UpdatePost(int postId, CreateUpdatePost post)
     {
         var postToUpdate = await _dbContext.Posts.FindAsync(postId);
         postToUpdate.Title = post.Title;

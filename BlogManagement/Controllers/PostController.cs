@@ -4,6 +4,7 @@ using BlogManagement.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace BlogManagement.Controllers
@@ -31,20 +32,29 @@ namespace BlogManagement.Controllers
             return Ok(result);
         }
 
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Post>>> GetAllPosts()
+        {
+            var result = await _postService.GetAllPosts();
+            return Ok(result);
+        }
 
 
         [HttpPost]
-        public async Task<ActionResult<Post>> AddPost([FromBody] CreatePost post)
+        public async Task<ActionResult<Post>> AddPost([FromBody] CreateUpdatePost post)
         {
-            var existingBlog = await _blogService.GetBlog(post.BlogId);
-            if(existingBlog == null) return BadRequest($"Blog with id {post.BlogId} is not exist");
+            if (post.BlogId != 0)
+            {
+                var existingBlog = await _blogService.GetBlog(post.BlogId);
+                if(existingBlog == null) return BadRequest($"Blog with id {post.BlogId} is not exist");
+            }
             var result = await _postService.AddNewPost(post);
             return Ok(result);
         }
         
         [HttpPut]
         [Route("{postId}")]
-        public async Task<ActionResult<Post>> UpdatePost([FromRoute] int postId, [FromBody] UpdatePost post)
+        public async Task<ActionResult<Post>> UpdatePost([FromRoute] int postId, [FromBody] CreateUpdatePost post)
         {
             var existingPost = await _postService.GetPost(postId);
             if(existingPost == null) return BadRequest($"Post with id {postId} is not exist");

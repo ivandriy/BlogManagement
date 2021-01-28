@@ -17,7 +17,6 @@ namespace BlogManagement.Models
         public DateTimeOffset? UpdatedOn { get; set; }
         
         // Blog relation (1-to-many)
-        public int BlogId { get; set; }
         [JsonIgnore]
         public Blog Blog { get; set; }
         

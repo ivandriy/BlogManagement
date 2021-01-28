@@ -3,6 +3,7 @@ using BlogManagement.DataAccess;
 using BlogManagement.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace BlogManagement.Services
@@ -59,6 +60,27 @@ namespace BlogManagement.Services
             var blog = await _dbContext.Blogs.FindAsync(blogId);
             await _dbContext.Entry(blog).Collection(b => b.BlogPosts).LoadAsync();
             return blog?.BlogPosts;
+        }
+
+        public async Task AddPostsToBlog(int blogId, IEnumerable<int> postIds)
+        {
+            var blog = await _dbContext.Blogs.FindAsync(blogId);
+            await _dbContext.Entry(blog).Collection(b => b.BlogPosts).LoadAsync();
+
+            var newPostIdsList = postIds.ToList();
+            var postIdsToAdd = newPostIdsList.Except(blog.BlogPosts.Select(b => b.PostId));
+            
+            var postsToAdd = await _dbContext.Posts.Where(p => postIdsToAdd.Contains(p.PostId)).ToListAsync();
+            blog.BlogPosts.AddRange(postsToAdd);
+            await _dbContext.SaveChangesAsync();
+        }
+        
+        public async Task RemovePostsFromBlog(int blogId, IEnumerable<int> postIds)
+        {
+            var blog = await _dbContext.Blogs.FindAsync(blogId);
+            await _dbContext.Entry(blog).Collection(b => b.BlogPosts).LoadAsync();
+            blog.BlogPosts.RemoveAll(p => postIds.Contains(p.PostId));
+            await _dbContext.SaveChangesAsync();
         }
 
         #endregion

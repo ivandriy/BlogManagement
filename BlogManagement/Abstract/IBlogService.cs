@@ -18,6 +18,10 @@ namespace BlogManagement.Abstract
 
         Task<IEnumerable<Post>> GetAllBlogPosts(int blogId);
 
+        Task AddPostsToBlog(int blogId, IEnumerable<int> postIds);
+
+        Task RemovePostsFromBlog(int blogId, IEnumerable<int> postIds);
+
         Task<IEnumerable<Author>> GetAllAuthors();
         
         Task<Author> GetAuthor(int authorId);
