@@ -1,14 +1,20 @@
 using BlogManagement.Abstract;
 using BlogManagement.DataAccess;
 using BlogManagement.Infrastructure;
+using BlogManagement.Options;
 using BlogManagement.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Text;
 
 namespace BlogManagement
 {
@@ -28,7 +34,37 @@ namespace BlogManagement
             {
                 opt.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"));
             });
-            
+
+            services.Configure<JwtConfigOptions>(Configuration.GetSection("JwtConfig"));
+            var jwtTokenConfig = Configuration.GetSection("JwtConfig")
+                .Get<JwtConfigOptions>();
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(opt =>
+            {
+                opt.RequireHttpsMetadata = true;
+                opt.SaveToken = true;
+                opt.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtTokenConfig.Secret)),
+                    ValidateAudience = false,
+                    ValidateIssuer = false,
+                    ValidateLifetime = true,
+                    RequireExpirationTime = false
+                };
+
+            });
+
+            services.AddDefaultIdentity<IdentityUser>(options =>
+            {
+                options.SignIn.RequireConfirmedAccount = true;
+            }).AddEntityFrameworkStores<BlogDbContext>();
+
             services.AddDatabaseDeveloperPageExceptionFilter();
             
             services.AddControllersWithViews();
@@ -37,7 +73,6 @@ namespace BlogManagement
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "ClientApp/build"; });
 
             services.AddSingleton<ISystemClock, SystemClock>();
-            services.AddScoped<IUserService, UserService>();
             services.AddScoped<IBlogService, BlogService>();
 
             services.AddSwaggerGen();
@@ -69,6 +104,8 @@ namespace BlogManagement
             });
 
             app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

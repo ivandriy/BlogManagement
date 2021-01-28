@@ -1,5 +1,7 @@
 using BlogManagement.Abstract;
 using BlogManagement.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -8,17 +10,17 @@ namespace BlogManagement.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AdminController : ControllerBase
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public class BlogController : ControllerBase
     {
         private readonly IBlogService _blogService;
 
-        public AdminController(IBlogService blogService)
+        public BlogController(IBlogService blogService)
         {
             _blogService = blogService;
         }
 
         [HttpGet]
-        [Route("Blog")]
         public async Task<ActionResult<IEnumerable<Blog>>> GetBlogs()
         {
             var result = await _blogService.GetAllBlogs();
@@ -26,7 +28,7 @@ namespace BlogManagement.Controllers
         }
 
         [HttpGet]
-        [Route("Blog/{blogId}")]
+        [Route("{blogId}")]
         public async Task<ActionResult<Blog>> GetBlog(int blogId)
         {
             var result = await _blogService.GetBlog(blogId);
@@ -35,7 +37,6 @@ namespace BlogManagement.Controllers
         }
 
         [HttpPost]
-        [Route("Blog")]
         public async Task<ActionResult<Blog>> AddBlog([FromQuery] string blogName)
         {
             var result = await _blogService.AddBlog(blogName);
@@ -43,7 +44,7 @@ namespace BlogManagement.Controllers
         }
         
         [HttpPut]
-        [Route("Blog/{blogId}")]
+        [Route("{blogId}")]
         public async Task<ActionResult<Blog>> UpdateBlog([FromRoute]int blogId, [FromQuery]string blogName)
         {
             var existingBlog = await _blogService.GetBlog(blogId);
@@ -53,7 +54,7 @@ namespace BlogManagement.Controllers
         }
         
         [HttpDelete]
-        [Route("Blog/{blogId}")]
+        [Route("{blogId}")]
         public async Task<ActionResult> RemoveBlog([FromRoute]int blogId)
         {
             var existingBlog = await _blogService.GetBlog(blogId);

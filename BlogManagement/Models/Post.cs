@@ -11,12 +11,11 @@ namespace BlogManagement.Models
         public DateTimeOffset? CreatedOn { get; set; }
         public DateTimeOffset? UpdatedOn { get; set; }
         
+        // Blog relation
         public int BlogId { get; set; }
         [JsonIgnore]
         public Blog Blog { get; set; }
         
-        public int UserId { get; set; }
-        [JsonIgnore]
-        public User User { get; set; }
+        public string UserName { get; set; }
     }
 }

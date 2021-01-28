@@ -2,8 +2,10 @@ using BlogManagement.Abstract;
 using BlogManagement.DataAccess;
 using BlogManagement.DTO.Request;
 using BlogManagement.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace BlogManagement.Services
@@ -12,11 +14,13 @@ namespace BlogManagement.Services
     {
         private readonly BlogDbContext _dbContext;
         private readonly ISystemClock _clock;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public BlogService(BlogDbContext dbContext, ISystemClock clock)
+        public BlogService(BlogDbContext dbContext, ISystemClock clock, IHttpContextAccessor httpContextAccessor)
         {
             _dbContext = dbContext;
             _clock = clock;
+            _httpContextAccessor = httpContextAccessor;
         }
         
         public async Task<Blog> AddBlog(string name)
@@ -62,20 +66,23 @@ namespace BlogManagement.Services
         public async Task<Post> AddNewPost(CreatePost post)
         {
             var existingBlog = await _dbContext.Blogs.Include(b => b.BlogPosts).SingleOrDefaultAsync( b => b.BlogId == post.BlogId);
-            var existingUser = await _dbContext.Users.Include(u => u.Posts).SingleOrDefaultAsync(u => u.UserId == post.UserId);
             var currDateTime = _clock.GetCurrentDateTime();
+            string userName = string.Empty;
+            if (_httpContextAccessor.HttpContext != null)
+            {
+                userName = _httpContextAccessor.HttpContext.User.FindFirst(claim => claim.Type == ClaimTypes.Email)?.Value;
+            }
+
             var newPost = new Post
             {
                 Title = post.Title,
                 Content = post.Body,
                 CreatedOn = currDateTime,
                 UpdatedOn = currDateTime,
-                UserId = post.UserId,
-                User = existingUser
+                UserName = userName
             };
 
            existingBlog.BlogPosts.Add(newPost);
-           existingUser.Posts.Add(newPost);
            await _dbContext.SaveChangesAsync();
            return newPost;
         }

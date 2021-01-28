@@ -4,6 +4,10 @@ namespace BlogManagement.Models
 {
     public class Blog
     {
+        public Blog()
+        {
+            BlogPosts = new List<Post>();
+        }
         public int BlogId { get; set; }
         public string Name { get; set; }
 

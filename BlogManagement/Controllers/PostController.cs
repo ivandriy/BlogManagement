@@ -1,6 +1,8 @@
 using BlogManagement.Abstract;
 using BlogManagement.DTO.Request;
 using BlogManagement.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -9,6 +11,7 @@ namespace BlogManagement.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class PostController: ControllerBase
     {
         private readonly IBlogService _blogService;
