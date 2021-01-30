@@ -83,7 +83,7 @@ namespace BlogManagement.DataAccess.Repositories
 
     public async Task<Post> UpdatePost(int postId, CreateUpdatePost post)
     {
-        var postToUpdate = await _dbContext.Posts.FindAsync(postId);
+        var postToUpdate = await _dbContext.Posts.Include(p => p.Categories).SingleOrDefaultAsync(p => p.PostId == postId);
         if(!string.IsNullOrWhiteSpace(post.Title))
             postToUpdate.Title = post.Title;
         if(!string.IsNullOrWhiteSpace(post.Body))
