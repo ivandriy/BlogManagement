@@ -43,21 +43,19 @@ namespace BlogManagement.DataAccess.Repositories
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<Blog>> GetAllBlogs() => await _dbContext.Blogs.ToArrayAsync();
+        public async Task<IEnumerable<Blog>> GetAllBlogs() => await _dbContext.Blogs.AsNoTracking().ToArrayAsync();
 
-        public async Task<Blog> GetBlog(int blogId)
-        {
-            var blog = await _dbContext.Blogs.FindAsync(blogId);
-            await _dbContext.Entry(blog).Collection(b => b.BlogPosts).LoadAsync();
-            await _dbContext.Entry(blog).Reference(b => b.BlogAuthor).LoadAsync();
-            await _dbContext.Entry(blog).Reference(b => b.Theme).LoadAsync();
-            return blog;
-        }
+        public async Task<Blog> GetBlog(int blogId) =>
+            await _dbContext.Blogs
+                .Include(b => b.BlogPosts)
+                .Include(b => b.BlogAuthor)
+                .Include(b => b.Theme)
+                .AsNoTracking()
+                .SingleOrDefaultAsync(b => b.BlogId == blogId);
 
         public async Task<IEnumerable<Post>> GetAllBlogPosts(int blogId)
         {
-            var blog = await _dbContext.Blogs.FindAsync(blogId);
-            await _dbContext.Entry(blog).Collection(b => b.BlogPosts).LoadAsync();
+            var blog = await GetBlog(blogId);
             return blog?.BlogPosts;
         }
 
@@ -86,11 +84,11 @@ namespace BlogManagement.DataAccess.Repositories
         
         #region Author
 
-        public async Task<Author> GetAuthor(int authorId) => await _dbContext.Authors.FindAsync(authorId);
+        public async Task<Author> GetAuthor(int authorId) => await _dbContext.Authors.AsNoTracking().SingleOrDefaultAsync(a => a.AuthorId == authorId);
         
-        public async Task<Author> GetAuthor(string email) => await _dbContext.Authors.SingleOrDefaultAsync(a => a.Email == email);
+        public async Task<Author> GetAuthor(string email) => await _dbContext.Authors.AsNoTracking().SingleOrDefaultAsync(a => a.Email == email);
 
-        public async Task<IEnumerable<Author>> GetAllAuthors() => await _dbContext.Authors.ToArrayAsync();
+        public async Task<IEnumerable<Author>> GetAllAuthors() => await _dbContext.Authors.AsNoTracking().ToArrayAsync();
         
         public async Task<Author> AddAuthor(Author author)
         {
@@ -121,11 +119,12 @@ namespace BlogManagement.DataAccess.Repositories
         #endregion
 
         #region Theme
-        public async Task<Theme> GetTheme(int themeId) => await _dbContext.Themes.FindAsync(themeId);
-        
-        public async Task<Theme> GetTheme(string themeName) => await _dbContext.Themes.SingleOrDefaultAsync(t => t.ThemeName == themeName);
 
-        public async Task<IEnumerable<Theme>> GetAllThemes() => await _dbContext.Themes.ToArrayAsync();
+        public async Task<Theme> GetTheme(int themeId) => await _dbContext.Themes.AsNoTracking().SingleOrDefaultAsync(t => t.ThemeId == themeId);
+        
+        public async Task<Theme> GetTheme(string themeName) => await _dbContext.Themes.AsNoTracking().SingleOrDefaultAsync(t => t.ThemeName == themeName);
+
+        public async Task<IEnumerable<Theme>> GetAllThemes() => await _dbContext.Themes.AsNoTracking().ToArrayAsync();
 
         public async Task<Theme> AddTheme(string themeName)
         {

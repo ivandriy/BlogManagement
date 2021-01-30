@@ -40,20 +40,19 @@ namespace BlogManagement.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Post>> AddPost([FromBody] CreateUpdatePost post)
+        public async Task<ActionResult<Post>> AddPost([FromBody] CreatePostRequest post)
         {
-            if (post.BlogId != 0)
-            {
-                var existingBlog = await _blogService.GetBlog(post.BlogId);
-                if(existingBlog == null) return BadRequest($"Blog with id {post.BlogId} is not exist");
-            }
+            if (!ModelState.IsValid)
+                return BadRequest();
+            var existingBlog = await _blogService.GetBlog(post.BlogId);
+            if(existingBlog == null) return BadRequest($"Blog with id {post.BlogId} is not exist");
             var result = await _postService.AddNewPost(post);
             return Ok(result);
         }
         
         [HttpPut]
         [Route("{postId}")]
-        public async Task<ActionResult<Post>> UpdatePost([FromRoute] int postId, [FromBody] CreateUpdatePost post)
+        public async Task<ActionResult<Post>> UpdatePost([FromRoute] int postId, [FromBody] UpdatePostRequest post)
         {
             var existingPost = await _postService.GetPost(postId);
             if(existingPost == null) return BadRequest($"Post with id {postId} is not exist");

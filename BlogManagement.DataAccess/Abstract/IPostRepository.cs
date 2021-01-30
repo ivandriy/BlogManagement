@@ -11,11 +11,11 @@ namespace BlogManagement.DataAccess.Abstract
 
         Task<IEnumerable<Post>> GetAllPosts();
         
-        Task<Post> AddNewPost(CreateUpdatePost post);
+        Task<Post> AddNewPost(CreatePostRequest createPost);
         
         Task RemovePost(int postId);
         
-        Task<Post> UpdatePost(int postId, CreateUpdatePost postUpd);
+        Task<Post> UpdatePost(int postId, UpdatePostRequest postUpd);
 
         Task<Category> GetCategory(int categoryId);
 

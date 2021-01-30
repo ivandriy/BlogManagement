@@ -18,12 +18,11 @@ namespace BlogManagement.DataAccess.Models
         public DateTimeOffset? CreatedOn { get; set; }
         public DateTimeOffset? UpdatedOn { get; set; }
         
-        // Blog relation (1-to-many)
-        [JsonIgnore]
-        public Blog Blog { get; set; }
-        
         public string UserName { get; set; }
         
+        // Blog relation (1-to-many)
+        public int BlogId { get; set; }
+
         //Many-to-many relationship to Category
         [JsonIgnore]
         public List<Category> Categories { get; set; }

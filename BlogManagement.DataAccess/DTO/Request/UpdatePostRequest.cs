@@ -1,18 +1,17 @@
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace BlogManagement.DataAccess.DTO.Request
 {
-    public class CreateUpdatePost
+    public class UpdatePostRequest
     {
-        public CreateUpdatePost()
+        public UpdatePostRequest()
         {
             CategoryIds = new List<int>();
         }
         public string Title { get; set; }
         
         public string Body { get; set; }
-        
-        public int BlogId { get; set; }
 
         public List<int> CategoryIds { get; set; }
     }

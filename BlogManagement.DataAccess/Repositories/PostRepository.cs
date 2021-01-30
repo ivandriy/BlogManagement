@@ -25,16 +25,12 @@ namespace BlogManagement.DataAccess.Repositories
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task<Post> GetPost(int postId)
-    {
-        var post = await _dbContext.Posts.FindAsync(postId);
-        await _dbContext.Entry(post).Collection(p => p.Categories).LoadAsync();
-        return post;
-    }
+    public async Task<Post> GetPost(int postId) => 
+        await _dbContext.Posts.Include(p => p.Categories).AsNoTracking().SingleOrDefaultAsync(p => p.PostId == postId);
 
-    public async Task<IEnumerable<Post>> GetAllPosts() => await _dbContext.Posts.ToArrayAsync();
+    public async Task<IEnumerable<Post>> GetAllPosts() => await _dbContext.Posts.AsNoTracking().ToArrayAsync();
 
-    public async Task<Post> AddNewPost(CreateUpdatePost post)
+    public async Task<Post> AddNewPost(CreatePostRequest createPost)
     {
         var currDateTime = _clock.GetCurrentDateTime();
         var userName = string.Empty;
@@ -44,24 +40,25 @@ namespace BlogManagement.DataAccess.Repositories
             userName = _httpContextAccessor.HttpContext.User.FindFirst(claim => claim.Type == ClaimTypes.Email)?.Value;
         }
 
-        if (post.CategoryIds.Any())
+        if (createPost.CategoryIds.Any())
         {
-            postCategories = await _dbContext.Categories.Where(c => post.CategoryIds.Contains(c.CategoryId)).ToListAsync();
+            postCategories = await _dbContext.Categories.Where(c => createPost.CategoryIds.Contains(c.CategoryId)).ToListAsync();
         }
 
         var newPost = new Post
         {
-            Title = post.Title,
-            Content = post.Body,
+            Title = createPost.Title,
+            Content = createPost.Body,
             CreatedOn = currDateTime,
             UpdatedOn = currDateTime,
             UserName = userName,
-            Categories = postCategories
+            Categories = postCategories,
+            BlogId = createPost.BlogId
         };
         
-        if (post.BlogId != 0)
+        if (createPost.BlogId != 0)
         {
-            var existingBlog = await _dbContext.Blogs.FindAsync(post.BlogId);
+            var existingBlog = await _dbContext.Blogs.FindAsync(createPost.BlogId);
             await _dbContext.Entry(existingBlog).Collection(b => b.BlogPosts).LoadAsync();
             existingBlog.BlogPosts.Add(newPost);
         }
@@ -81,17 +78,17 @@ namespace BlogManagement.DataAccess.Repositories
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task<Post> UpdatePost(int postId, CreateUpdatePost post)
+    public async Task<Post> UpdatePost(int postId, UpdatePostRequest updatePost)
     {
         var postToUpdate = await _dbContext.Posts.Include(p => p.Categories).SingleOrDefaultAsync(p => p.PostId == postId);
-        if(!string.IsNullOrWhiteSpace(post.Title))
-            postToUpdate.Title = post.Title;
-        if(!string.IsNullOrWhiteSpace(post.Body))
-            postToUpdate.Content = post.Body;
-        if (post.CategoryIds.Any())
+        if(!string.IsNullOrWhiteSpace(updatePost.Title))
+            postToUpdate.Title = updatePost.Title;
+        if(!string.IsNullOrWhiteSpace(updatePost.Body))
+            postToUpdate.Content = updatePost.Body;
+        if (updatePost.CategoryIds.Any())
         {
             var existingCategories = postToUpdate.Categories.Select(c => c.CategoryId).ToList();
-            var categoryIdsToAdd = post.CategoryIds.Except(existingCategories).ToList();
+            var categoryIdsToAdd = updatePost.CategoryIds.Except(existingCategories).ToList();
             if (categoryIdsToAdd.Any())
             {
                 var categoriesToAdd = await _dbContext.Categories.Where(c => categoryIdsToAdd.Contains(c.CategoryId)).ToListAsync();
@@ -107,20 +104,17 @@ namespace BlogManagement.DataAccess.Repositories
         return postToUpdate;
     }
 
-    public async Task<Category> GetCategory(int categoryId)
-    {
-        var category = await _dbContext.Categories.FindAsync(categoryId);
-        if (category != null)
-        {
-            await _dbContext.Entry(category).Collection(c => c.CategoryPosts).LoadAsync();
-            
-        }
-        return category;
-    }
+    public async Task<Category> GetCategory(int categoryId) =>
+        await _dbContext.Categories.Include(c => c.CategoryPosts)
+            .AsNoTracking()
+            .SingleOrDefaultAsync(c => c.CategoryId == categoryId);
 
-    public async Task<Category> GetCategory(string categoryName) => await _dbContext.Categories.Include(c => c.CategoryPosts).SingleOrDefaultAsync(c => c.Name == categoryName);
+    public async Task<Category> GetCategory(string categoryName) =>
+        await _dbContext.Categories.Include(c => c.CategoryPosts)
+            .AsNoTracking()
+            .SingleOrDefaultAsync(c => c.Name == categoryName);
 
-    public async Task<IEnumerable<Category>> GetAllCategories() => await _dbContext.Categories.ToArrayAsync();
+    public async Task<IEnumerable<Category>> GetAllCategories() => await _dbContext.Categories.AsNoTracking().ToArrayAsync();
 
     public async Task<Category> AddCategory(string categoryName)
     {
