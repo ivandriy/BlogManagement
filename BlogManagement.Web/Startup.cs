@@ -3,7 +3,7 @@ using BlogManagement.DataAccess.Abstract;
 using BlogManagement.DataAccess.Repositories;
 using BlogManagement.Infrastructure;
 using BlogManagement.Infrastructure.Abstract;
-using BlogManagement.Options;
+using BlogManagement.Infrastructure.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -36,8 +36,11 @@ namespace BlogManagement
             });
 
             services.Configure<JwtConfigOptions>(Configuration.GetSection("JwtConfig"));
+            services.Configure<RedisOptions>(Configuration.GetSection("Redis"));
             var jwtTokenConfig = Configuration.GetSection("JwtConfig")
                 .Get<JwtConfigOptions>();
+            var redisConfig = Configuration.GetSection("Redis")
+                .Get<RedisOptions>();
 
             services.AddAuthentication(options =>
             {
@@ -77,6 +80,11 @@ namespace BlogManagement
             services.AddScoped<IPostRepository, PostRepository>();
 
             services.AddSwaggerGen();
+
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = redisConfig.Connection;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -1,8 +1,14 @@
 using BlogManagement.DataAccess.Abstract;
 using BlogManagement.DataAccess.Models;
+using BlogManagement.Infrastructure.Options;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace BlogManagement.DataAccess.Repositories
@@ -10,10 +16,16 @@ namespace BlogManagement.DataAccess.Repositories
     public class BlogRepository : IBlogRepository
     {
         private readonly BlogDbContext _dbContext;
+        private readonly IDistributedCache _distributedCache;
+        private readonly RedisOptions _redisOptions;
 
-        public BlogRepository(BlogDbContext dbContext)
+        public BlogRepository(BlogDbContext dbContext,
+            IDistributedCache distributedCache,
+            IOptionsMonitor<RedisOptions> redisOptions)
         {
             _dbContext = dbContext;
+            _distributedCache = distributedCache;
+            _redisOptions = redisOptions.CurrentValue;
         }
 
         #region Blog
@@ -55,8 +67,36 @@ namespace BlogManagement.DataAccess.Repositories
 
         public async Task<IEnumerable<Post>> GetAllBlogPosts(int blogId)
         {
-            var blog = await GetBlog(blogId);
-            return blog?.BlogPosts;
+            List<Post> blogPostsList;
+            if (_redisOptions.IsEnabled)
+            {
+                string blogPostsSerialized;
+                var cacheKey = $"blogPosts:{blogId}";
+                var encodedPosts = await _distributedCache.GetAsync(cacheKey);
+                if (encodedPosts != null)
+                {
+                    blogPostsSerialized = Encoding.UTF8.GetString(encodedPosts);
+                    blogPostsList = JsonConvert.DeserializeObject<List<Post>>(blogPostsSerialized);
+                }
+                else
+                {
+                    var blog = await GetBlog(blogId);
+                    blogPostsList = blog?.BlogPosts;
+                    blogPostsSerialized = JsonConvert.SerializeObject(blogPostsList);
+                    encodedPosts = Encoding.UTF8.GetBytes(blogPostsSerialized);
+                    var cacheOptions = new DistributedCacheEntryOptions()
+                        .SetSlidingExpiration(TimeSpan.FromMinutes(_redisOptions.SlidingExpirationMinutes))
+                        .SetAbsoluteExpiration(TimeSpan.FromMinutes(_redisOptions.AbsoluteExpirationMinutes));
+                    await _distributedCache.SetAsync(cacheKey, encodedPosts, cacheOptions);
+                }
+            }
+            else
+            {
+                var blog = await GetBlog(blogId);
+                blogPostsList = blog?.BlogPosts;
+            }
+            
+            return blogPostsList;
         }
 
         public async Task AddPostsToBlog(int blogId, IEnumerable<int> postIds)

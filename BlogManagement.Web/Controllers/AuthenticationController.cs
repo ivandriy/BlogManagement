@@ -1,7 +1,7 @@
 using BlogManagement.DataAccess.DTO.Request;
 using BlogManagement.DataAccess.DTO.Response;
 using BlogManagement.Infrastructure.Abstract;
-using BlogManagement.Options;
+using BlogManagement.Infrastructure.Options;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;

@@ -1,4 +1,4 @@
-namespace BlogManagement.Options
+namespace BlogManagement.Infrastructure.Options
 {
     public class JwtConfigOptions
     {
