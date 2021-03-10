@@ -15,13 +15,11 @@ namespace BlogManagement.Controllers
     {
         private readonly IPostRepository _postRepository;
         private readonly IBlogRepository _blogRepository;
-        private readonly IPostValidationProcessor _validator;
 
-        public PostController(IPostRepository postRepository, IBlogRepository blogRepository, IPostValidationProcessor validator)
+        public PostController(IPostRepository postRepository, IBlogRepository blogRepository)
         {
             _postRepository = postRepository;
             _blogRepository = blogRepository;
-            _validator = validator;
         }
 
         #region Post
@@ -43,13 +41,13 @@ namespace BlogManagement.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Post>> AddPost([FromBody] CreatePostRequest post)
+        public async Task<ActionResult<Post>> AddPost([FromBody] CreatePostRequest post, [FromServices] IPostValidationProcessor validator)
         {
             if (!ModelState.IsValid)
                 return BadRequest();
             var existingBlog = await _blogRepository.GetBlog(post.BlogId);
             if(existingBlog == null) return BadRequest($"Blog with id {post.BlogId} is not exist");
-            var validationResult = await _validator.ValidateAll(post);
+            var validationResult = await validator.ValidateAll(post);
             if (!validationResult.IsSuccessful)
                 return BadRequest(validationResult.ErrorMessages);
             var result = await _postRepository.AddNewPost(post);

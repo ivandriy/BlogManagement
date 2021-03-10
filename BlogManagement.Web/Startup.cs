@@ -65,13 +65,13 @@ namespace BlogManagement
                     ValidateLifetime = true,
                     RequireExpirationTime = false
                 };
-
             });
 
             services.AddDefaultIdentity<IdentityUser>(options =>
             {
                 options.SignIn.RequireConfirmedAccount = true;
-            }).AddEntityFrameworkStores<BlogDbContext>();
+            })
+                .AddEntityFrameworkStores<BlogDbContext>();
 
             services.AddDatabaseDeveloperPageExceptionFilter();
             
