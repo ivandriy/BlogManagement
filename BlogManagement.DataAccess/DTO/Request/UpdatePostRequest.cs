@@ -9,8 +9,11 @@ namespace BlogManagement.DataAccess.DTO.Request
         {
             CategoryIds = new List<int>();
         }
+        
+        [Required]
         public string Title { get; set; }
         
+        [Required]
         public string Body { get; set; }
 
         public List<int> CategoryIds { get; set; }

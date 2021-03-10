@@ -4,6 +4,7 @@ using BlogManagement.DataAccess.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using BlogManagement.Validation;
 
 namespace BlogManagement.Controllers
 {
@@ -12,13 +13,15 @@ namespace BlogManagement.Controllers
     //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class PostController: ControllerBase
     {
-        private readonly IPostRepository _postService;
-        private readonly IBlogRepository _blogService;
+        private readonly IPostRepository _postRepository;
+        private readonly IBlogRepository _blogRepository;
+        private readonly IPostValidationProcessor _validator;
 
-        public PostController(IPostRepository postService, IBlogRepository blogService)
+        public PostController(IPostRepository postRepository, IBlogRepository blogRepository, IPostValidationProcessor validator)
         {
-            _postService = postService;
-            _blogService = blogService;
+            _postRepository = postRepository;
+            _blogRepository = blogRepository;
+            _validator = validator;
         }
 
         #region Post
@@ -26,7 +29,7 @@ namespace BlogManagement.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Post>>> GetAllPosts()
         {
-            var result = await _postService.GetAllPosts();
+            var result = await _postRepository.GetAllPosts();
             return Ok(result);
         }
         
@@ -34,7 +37,7 @@ namespace BlogManagement.Controllers
         [Route("{postId}")]
         public async Task<ActionResult<Post>> GetPost([FromRoute] int postId)
         {
-            var result = await _postService.GetPost(postId);
+            var result = await _postRepository.GetPost(postId);
             if (result == null) return NotFound(postId);
             return Ok(result);
         }
@@ -44,9 +47,12 @@ namespace BlogManagement.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest();
-            var existingBlog = await _blogService.GetBlog(post.BlogId);
+            var existingBlog = await _blogRepository.GetBlog(post.BlogId);
             if(existingBlog == null) return BadRequest($"Blog with id {post.BlogId} is not exist");
-            var result = await _postService.AddNewPost(post);
+            var validationResult = await _validator.ValidateAll(post);
+            if (!validationResult.IsSuccessful)
+                return BadRequest(validationResult.ErrorMessages);
+            var result = await _postRepository.AddNewPost(post);
             return Ok(result);
         }
         
@@ -54,9 +60,9 @@ namespace BlogManagement.Controllers
         [Route("{postId}")]
         public async Task<ActionResult<Post>> UpdatePost([FromRoute] int postId, [FromBody] UpdatePostRequest post)
         {
-            var existingPost = await _postService.GetPost(postId);
+            var existingPost = await _postRepository.GetPost(postId);
             if(existingPost == null) return BadRequest($"Post with id {postId} is not exist");
-            var result = await _postService.UpdatePost(postId, post);
+            var result = await _postRepository.UpdatePost(postId, post);
             return Ok(result);
         }
         
@@ -64,9 +70,9 @@ namespace BlogManagement.Controllers
         [Route("{postId}")]
         public async Task<ActionResult> RemovePost([FromRoute] int postId)
         {
-            var existingPost = await _postService.GetPost(postId);
+            var existingPost = await _postRepository.GetPost(postId);
             if(existingPost == null) return BadRequest($"Post with id {postId} is not exist");
-            await _postService.RemovePost(postId);
+            await _postRepository.RemovePost(postId);
             return Ok();
         }
 
@@ -78,7 +84,7 @@ namespace BlogManagement.Controllers
         [Route("Category")]
         public async Task<ActionResult<IEnumerable<Category>>> GetAllCategories()
         {
-            var result = await _postService.GetAllCategories();
+            var result = await _postRepository.GetAllCategories();
             return Ok(result);
         }
         
@@ -86,7 +92,7 @@ namespace BlogManagement.Controllers
         [Route("Category/{categoryId}")]
         public async Task<ActionResult<Category>> GetCategory([FromRoute] int categoryId)
         {
-            var result = await _postService.GetCategory(categoryId);
+            var result = await _postRepository.GetCategory(categoryId);
             if (result == null) return NotFound(categoryId);
             return Ok(result);
         }
@@ -95,10 +101,10 @@ namespace BlogManagement.Controllers
         [Route("Category")]
         public async Task<ActionResult<Category>> AddCategory([FromQuery] string categoryName)
         {
-            var existingCategory = await _postService.GetCategory(categoryName);
+            var existingCategory = await _postRepository.GetCategory(categoryName);
             if (existingCategory != null)
                 return BadRequest($"Category with name {categoryName} already exists");
-            var result = await _postService.AddCategory(categoryName);
+            var result = await _postRepository.AddCategory(categoryName);
             return Ok(result);
         }
         
@@ -106,10 +112,10 @@ namespace BlogManagement.Controllers
         [Route("Category/{categoryId}")]
         public async Task<ActionResult<Category>> UpdateCategory([FromRoute] int categoryId, [FromQuery] string categoryName)
         {
-            var existingCategory = await _postService.GetCategory(categoryId);
+            var existingCategory = await _postRepository.GetCategory(categoryId);
             if (existingCategory == null)
                 return BadRequest($"Category with id {categoryId} doesn't exist");
-            var result = await _postService.UpdateCategory(categoryId, categoryName);
+            var result = await _postRepository.UpdateCategory(categoryId, categoryName);
             return Ok(result);
         }
         
@@ -117,10 +123,10 @@ namespace BlogManagement.Controllers
         [Route("Category/{categoryId}")]
         public async Task<ActionResult> RemoveCategory([FromRoute] int categoryId)
         {
-            var existingCategory = await _postService.GetCategory(categoryId);
+            var existingCategory = await _postRepository.GetCategory(categoryId);
             if (existingCategory == null)
                 return BadRequest($"Category with id {categoryId} doesn't exist");
-            await _postService.RemoveCategory(categoryId);
+            await _postRepository.RemoveCategory(categoryId);
             return Ok();
         }
 

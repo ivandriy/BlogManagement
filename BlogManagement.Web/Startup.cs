@@ -15,6 +15,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using BlogManagement.Validation;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace BlogManagement
 {
@@ -81,6 +83,14 @@ namespace BlogManagement
             services.AddSingleton<ISystemClock, SystemClock>();
             services.AddScoped<IBlogRepository, BlogRepository>();
             services.AddScoped<IPostRepository, PostRepository>();
+            
+            services.TryAddEnumerable(new []
+            {
+                ServiceDescriptor.Scoped<IPostValidator, DuplicatePostTitleValidator>(),
+                ServiceDescriptor.Scoped<IPostValidator, PostContentLengthValidator>()
+            });
+            
+            services.AddScoped<IPostValidationProcessor, DefaultPostValidationProcessor>();
 
             services.AddSwaggerGen();
 
