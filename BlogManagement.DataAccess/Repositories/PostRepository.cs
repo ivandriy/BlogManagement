@@ -28,7 +28,7 @@ namespace BlogManagement.DataAccess.Repositories
     public async Task<Post> GetPost(int postId) => 
         await _dbContext.Posts.Include(p => p.Categories).AsNoTracking().SingleOrDefaultAsync(p => p.PostId == postId);
 
-    public async Task<IEnumerable<Post>> GetAllPosts() => await _dbContext.Posts.AsNoTracking().ToArrayAsync();
+    public async Task<IEnumerable<Post>> GetAllPosts() => await _dbContext.Posts.Include(p => p.Categories).AsNoTracking().ToArrayAsync();
 
     public async Task<Post> AddNewPost(CreatePostRequest createPost)
     {
@@ -114,7 +114,7 @@ namespace BlogManagement.DataAccess.Repositories
             .AsNoTracking()
             .SingleOrDefaultAsync(c => c.Name == categoryName);
 
-    public async Task<IEnumerable<Category>> GetAllCategories() => await _dbContext.Categories.AsNoTracking().ToArrayAsync();
+    public async Task<IEnumerable<Category>> GetAllCategories() => await _dbContext.Categories.Include(c => c.CategoryPosts).AsNoTracking().ToArrayAsync();
 
     public async Task<Category> AddCategory(string categoryName)
     {

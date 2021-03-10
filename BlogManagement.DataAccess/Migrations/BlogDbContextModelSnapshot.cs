@@ -15,16 +15,16 @@ namespace BlogManagement.DataAccess.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .UseIdentityByDefaultColumns()
                 .HasAnnotation("Relational:MaxIdentifierLength", 63)
-                .HasAnnotation("ProductVersion", "5.0.2");
+                .HasAnnotation("ProductVersion", "5.0.4")
+                .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
             modelBuilder.Entity("BlogManagement.DataAccess.Models.Author", b =>
                 {
                     b.Property<int>("AuthorId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<int>("BlogId")
                         .HasColumnType("integer");
@@ -50,6 +50,24 @@ namespace BlogManagement.DataAccess.Migrations
                         .IsUnique();
 
                     b.ToTable("Authors");
+
+                    b.HasData(
+                        new
+                        {
+                            AuthorId = 1,
+                            BlogId = 1,
+                            Email = "andrii@ivanskiy.com",
+                            FirstName = "Andrii",
+                            LastName = "Ivanskiy"
+                        },
+                        new
+                        {
+                            AuthorId = 2,
+                            BlogId = 2,
+                            Email = "steve_smith@ardalis.com",
+                            FirstName = "Steve",
+                            LastName = "Smith"
+                        });
                 });
 
             modelBuilder.Entity("BlogManagement.DataAccess.Models.Blog", b =>
@@ -57,12 +75,12 @@ namespace BlogManagement.DataAccess.Migrations
                     b.Property<int>("BlogId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
-                    b.Property<int?>("ThemeId")
+                    b.Property<int>("ThemeId")
                         .HasColumnType("integer");
 
                     b.HasKey("BlogId");
@@ -70,6 +88,20 @@ namespace BlogManagement.DataAccess.Migrations
                     b.HasIndex("ThemeId");
 
                     b.ToTable("Blogs");
+
+                    b.HasData(
+                        new
+                        {
+                            BlogId = 1,
+                            Name = "Andrii's Blog",
+                            ThemeId = 2
+                        },
+                        new
+                        {
+                            BlogId = 2,
+                            Name = "Ardalis",
+                            ThemeId = 1
+                        });
                 });
 
             modelBuilder.Entity("BlogManagement.DataAccess.Models.Category", b =>
@@ -77,7 +109,7 @@ namespace BlogManagement.DataAccess.Migrations
                     b.Property<int>("CategoryId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
@@ -88,6 +120,23 @@ namespace BlogManagement.DataAccess.Migrations
                         .IsUnique();
 
                     b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            CategoryId = 1,
+                            Name = ".NET Core"
+                        },
+                        new
+                        {
+                            CategoryId = 2,
+                            Name = "Azure"
+                        },
+                        new
+                        {
+                            CategoryId = 3,
+                            Name = "Microservices"
+                        });
                 });
 
             modelBuilder.Entity("BlogManagement.DataAccess.Models.Post", b =>
@@ -95,7 +144,7 @@ namespace BlogManagement.DataAccess.Migrations
                     b.Property<int>("PostId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<int>("BlogId")
                         .HasColumnType("integer");
@@ -120,6 +169,68 @@ namespace BlogManagement.DataAccess.Migrations
                     b.HasIndex("BlogId");
 
                     b.ToTable("Posts");
+
+                    b.HasData(
+                        new
+                        {
+                            PostId = 1,
+                            BlogId = 1,
+                            Content = "Some blog about new features in .NET 5",
+                            CreatedOn = new DateTimeOffset(new DateTime(2020, 12, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Title = "What's new in .NET 5",
+                            UpdatedOn = new DateTimeOffset(new DateTime(2020, 12, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            UserName = "Andrii Ivanskiy"
+                        },
+                        new
+                        {
+                            PostId = 2,
+                            BlogId = 1,
+                            Content = "Azure ServiceBus how-to for .NET Core developers",
+                            CreatedOn = new DateTimeOffset(new DateTime(2020, 12, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Title = "Azure ServiceBus - how to use it",
+                            UpdatedOn = new DateTimeOffset(new DateTime(2020, 12, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            UserName = "Andrii Ivanskiy"
+                        },
+                        new
+                        {
+                            PostId = 3,
+                            BlogId = 1,
+                            Content = "How to develop your first .NET Core microservice and deploy it to Azure",
+                            CreatedOn = new DateTimeOffset(new DateTime(2021, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Title = ".NET Core Microservices in Azure",
+                            UpdatedOn = new DateTimeOffset(new DateTime(2020, 2, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            UserName = "Andrii Ivanskiy"
+                        },
+                        new
+                        {
+                            PostId = 4,
+                            BlogId = 2,
+                            Content = "Design patterns overview for .NET developers",
+                            CreatedOn = new DateTimeOffset(new DateTime(2018, 4, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 3, 0, 0, 0)),
+                            Title = "Design patterns in .NET",
+                            UpdatedOn = new DateTimeOffset(new DateTime(2019, 7, 5, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 3, 0, 0, 0)),
+                            UserName = "Steve Smith"
+                        },
+                        new
+                        {
+                            PostId = 5,
+                            BlogId = 2,
+                            Content = "How to use Domain-Driven Design to build microservices",
+                            CreatedOn = new DateTimeOffset(new DateTime(2019, 3, 16, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Title = "DDD and Microservices",
+                            UpdatedOn = new DateTimeOffset(new DateTime(2020, 4, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 3, 0, 0, 0)),
+                            UserName = "Steve Smith"
+                        },
+                        new
+                        {
+                            PostId = 6,
+                            BlogId = 2,
+                            Content = "Some best practices how to develop your .NET Core applications",
+                            CreatedOn = new DateTimeOffset(new DateTime(2021, 3, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            Title = ".NET Core Best Practices",
+                            UpdatedOn = new DateTimeOffset(new DateTime(2021, 3, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 2, 0, 0, 0)),
+                            UserName = "Steve Smith"
+                        });
                 });
 
             modelBuilder.Entity("BlogManagement.DataAccess.Models.Theme", b =>
@@ -127,7 +238,7 @@ namespace BlogManagement.DataAccess.Migrations
                     b.Property<int>("ThemeId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("ThemeName")
                         .IsRequired()
@@ -139,6 +250,18 @@ namespace BlogManagement.DataAccess.Migrations
                         .IsUnique();
 
                     b.ToTable("Themes");
+
+                    b.HasData(
+                        new
+                        {
+                            ThemeId = 1,
+                            ThemeName = "Standard"
+                        },
+                        new
+                        {
+                            ThemeId = 2,
+                            ThemeName = "Dark"
+                        });
                 });
 
             modelBuilder.Entity("CategoryPost", b =>
@@ -154,6 +277,58 @@ namespace BlogManagement.DataAccess.Migrations
                     b.HasIndex("CategoryPostsPostId");
 
                     b.ToTable("PostCategoriesMapping");
+
+                    b.HasData(
+                        new
+                        {
+                            CategoriesCategoryId = 1,
+                            CategoryPostsPostId = 1
+                        },
+                        new
+                        {
+                            CategoriesCategoryId = 1,
+                            CategoryPostsPostId = 2
+                        },
+                        new
+                        {
+                            CategoriesCategoryId = 2,
+                            CategoryPostsPostId = 2
+                        },
+                        new
+                        {
+                            CategoriesCategoryId = 1,
+                            CategoryPostsPostId = 3
+                        },
+                        new
+                        {
+                            CategoriesCategoryId = 2,
+                            CategoryPostsPostId = 3
+                        },
+                        new
+                        {
+                            CategoriesCategoryId = 3,
+                            CategoryPostsPostId = 3
+                        },
+                        new
+                        {
+                            CategoriesCategoryId = 1,
+                            CategoryPostsPostId = 4
+                        },
+                        new
+                        {
+                            CategoriesCategoryId = 1,
+                            CategoryPostsPostId = 5
+                        },
+                        new
+                        {
+                            CategoriesCategoryId = 3,
+                            CategoryPostsPostId = 5
+                        },
+                        new
+                        {
+                            CategoriesCategoryId = 1,
+                            CategoryPostsPostId = 6
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -187,7 +362,7 @@ namespace BlogManagement.DataAccess.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("ClaimType")
                         .HasColumnType("text");
@@ -275,7 +450,7 @@ namespace BlogManagement.DataAccess.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("ClaimType")
                         .HasColumnType("text");
@@ -367,7 +542,9 @@ namespace BlogManagement.DataAccess.Migrations
                 {
                     b.HasOne("BlogManagement.DataAccess.Models.Theme", "Theme")
                         .WithMany()
-                        .HasForeignKey("ThemeId");
+                        .HasForeignKey("ThemeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Theme");
                 });

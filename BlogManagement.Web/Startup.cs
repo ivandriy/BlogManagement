@@ -32,7 +32,10 @@ namespace BlogManagement
         {
             services.AddDbContext<BlogDbContext>(opt =>
             {
-                opt.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")).EnableSensitiveDataLogging();
+                opt.UseNpgsql(
+                        Configuration.GetConnectionString("DefaultConnection"),
+                        builder => builder.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery) )
+                    .EnableSensitiveDataLogging();
             });
 
             services.Configure<JwtConfigOptions>(Configuration.GetSection("JwtConfig"));

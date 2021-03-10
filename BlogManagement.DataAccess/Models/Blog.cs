@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BlogManagement.DataAccess.Models
 {
@@ -13,6 +14,8 @@ namespace BlogManagement.DataAccess.Models
         
         // 1-to-1 to Theme
         public Theme Theme { get; set; }
+        [ForeignKey("Theme")]
+        public int ThemeId { get; set; }
 
         // 1-to-many relation to Posts
         public List<Post> BlogPosts { get; set; }

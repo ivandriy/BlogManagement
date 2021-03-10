@@ -55,11 +55,19 @@ namespace BlogManagement.DataAccess.Repositories
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<Blog>> GetAllBlogs() => await _dbContext.Blogs.AsNoTracking().ToArrayAsync();
+        public async Task<IEnumerable<Blog>> GetAllBlogs() 
+            => await _dbContext.Blogs
+                .Include(b => b.BlogPosts)
+                .ThenInclude(p => p.Categories)
+                .Include(b => b.BlogAuthor)
+                .Include(b => b.Theme)
+                .AsNoTracking()
+                .ToArrayAsync();
 
         public async Task<Blog> GetBlog(int blogId) =>
             await _dbContext.Blogs
                 .Include(b => b.BlogPosts)
+                .ThenInclude(p => p.Categories)
                 .Include(b => b.BlogAuthor)
                 .Include(b => b.Theme)
                 .AsNoTracking()
