@@ -28,10 +28,7 @@ namespace BlogManagement.DataAccess.Models
         public List<Category> Categories { get; set; }
 
         [NotMapped]
-        public List<string> CategoriesNames {
-            get
-            {
-                return Categories.Select(c => c.Name).ToList();
-            } }
+        [JsonInclude]
+        public List<string> CategoriesNames => Categories.Select(c => c.Name).ToList();
     }
 }

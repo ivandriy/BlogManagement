@@ -21,13 +21,8 @@ namespace BlogManagement.DataAccess.Models
         [JsonIgnore]
         public List<Post> CategoryPosts { get; set; }
 
-        [NotMapped]
-        public List<int> CategoryPostIds
-        {
-            get
-            {
-                return CategoryPosts.Select(p => p.PostId).ToList();
-            }
-        }
+        [NotMapped] 
+        [JsonInclude] 
+        public List<int> CategoryPostIds => CategoryPosts.Select(p => p.PostId).ToList();
     }
 }

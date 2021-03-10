@@ -15,8 +15,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using BlogManagement.DataAccess.Profiles;
+using BlogManagement.Services;
 using BlogManagement.Validation;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace BlogManagement
 {
@@ -83,12 +84,14 @@ namespace BlogManagement
             services.AddSingleton<ISystemClock, SystemClock>();
             services.AddScoped<IBlogRepository, BlogRepository>();
             services.AddScoped<IPostRepository, PostRepository>();
-            
-            services.TryAddEnumerable(new []
-            {
-                ServiceDescriptor.Scoped<IPostValidator, DuplicatePostTitleValidator>(),
-                ServiceDescriptor.Scoped<IPostValidator, PostContentLengthValidator>()
-            });
+            services.AddScoped<IBlogService, BlogService>();
+            services.Decorate<IBlogService, CachedBlogService>();
+
+            services.Scan(scan =>
+                scan.FromAssemblyOf<IPostValidator>()
+                    .AddClasses(c => c.AssignableTo<IPostValidator>())
+                    .AsImplementedInterfaces()
+                    .WithScopedLifetime());
             
             services.AddScoped<IPostValidationProcessor, DefaultPostValidationProcessor>();
 
@@ -98,6 +101,8 @@ namespace BlogManagement
             {
                 options.Configuration = redisConfig.Connection;
             });
+            
+            services.AddAutoMapper(typeof(PostProfile));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
