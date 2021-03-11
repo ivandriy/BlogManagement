@@ -15,16 +15,16 @@ namespace BlogManagement.Services
     {
         private readonly IBlogService _repository;
         private readonly IDistributedCache _distributedCache;
-        private readonly RedisOptions _redisOptions;
+        private readonly RedisConfigurationOptions _redisOptions;
 
         public CachedBlogService( 
             IBlogService repository,
             IDistributedCache distributedCache,
-            IOptionsMonitor<RedisOptions> redisOptions)
+            IOptionsSnapshot<RedisConfigurationOptions> redisOptions)
         {
             _repository = repository;
             _distributedCache = distributedCache;
-            _redisOptions = redisOptions.CurrentValue;
+            _redisOptions = redisOptions.Value;
         }
         public async Task<IEnumerable<PostViewModel>> GetBlogPosts(int blogId)
         {

@@ -1,6 +1,6 @@
 namespace BlogManagement.Infrastructure.Options
 {
-    public class RedisOptions
+    public class RedisConfigurationOptions
     {
         public string Connection { get; set; }
 

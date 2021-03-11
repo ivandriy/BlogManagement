@@ -4,7 +4,6 @@ using BlogManagement.DataAccess.Repositories;
 using BlogManagement.Infrastructure;
 using BlogManagement.Infrastructure.Abstract;
 using BlogManagement.Infrastructure.Options;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -13,11 +12,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using BlogManagement.DataAccess.Profiles;
+using BlogManagement.Infrastructure.Extensions;
+using BlogManagement.Infrastructure.Validation;
 using BlogManagement.Services;
 using BlogManagement.Validation;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace BlogManagement
 {
@@ -42,31 +43,12 @@ namespace BlogManagement
             });
 
             services.Configure<JwtConfigOptions>(Configuration.GetSection("JwtConfig"));
-            services.Configure<RedisOptions>(Configuration.GetSection("Redis"));
-            var jwtTokenConfig = Configuration.GetSection("JwtConfig")
-                .Get<JwtConfigOptions>();
-            var redisConfig = Configuration.GetSection("Redis")
-                .Get<RedisOptions>();
+            services.Configure<RedisConfigurationOptions>(Configuration.GetSection("Redis"));
+            
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IValidateOptions<JwtConfigOptions>,JwtConfigValidation>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IValidateOptions<RedisConfigurationOptions>,RedisConfigValidation>());
 
-            services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(opt =>
-            {
-                opt.RequireHttpsMetadata = true;
-                opt.SaveToken = true;
-                opt.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtTokenConfig.Secret)),
-                    ValidateAudience = false,
-                    ValidateIssuer = false,
-                    ValidateLifetime = true,
-                    RequireExpirationTime = false
-                };
-            });
+            services.AddAuthenticationWithJwtBearerToken(Configuration);
 
             services.AddDefaultIdentity<IdentityUser>(options =>
             {
@@ -99,7 +81,7 @@ namespace BlogManagement
 
             services.AddStackExchangeRedisCache(options =>
             {
-                options.Configuration = redisConfig.Connection;
+                options.Configuration = Configuration.GetRedisConfiguration();
             });
             
             services.AddAutoMapper(typeof(PostProfile));
