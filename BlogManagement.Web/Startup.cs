@@ -37,7 +37,7 @@ namespace BlogManagement
             services.AddDbContext<BlogDbContext>(opt =>
             {
                 opt.UseNpgsql(
-                        Configuration.GetConnectionString("DefaultConnection"),
+                        Configuration.GetBlogDbConnectionString(),
                         builder => builder.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery) )
                     .EnableSensitiveDataLogging();
             });

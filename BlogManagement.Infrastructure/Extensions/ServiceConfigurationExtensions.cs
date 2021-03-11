@@ -39,6 +39,18 @@ namespace BlogManagement.Infrastructure.Extensions
 
         public static string GetRedisConfiguration(this IConfiguration configuration) => configuration.GetSection("Redis").Get<RedisConfigurationOptions>().ValidateRedisConfig().Connection;
 
+        public static string GetBlogDbConnectionString(this IConfiguration configuration)
+        {
+            var configSection = configuration.GetSection("BlogDbConfig");
+            var host = configSection.GetValue<string>("Host");
+            var port = configSection.GetValue<int>("Port");
+            var database = configSection.GetValue<string>("Database");
+            var user = configSection.GetValue<string>("Username");
+            var password = configSection.GetValue<string>("Password");
+
+            return $"Host={host};Port={port};Database={database};Username={user};Password={password}";
+        }
+        
         private static JwtConfigOptions ValidateJwtConfig(this JwtConfigOptions config)
         {
             if (string.IsNullOrWhiteSpace(config.Secret) || config.Secret.Length < 20)
