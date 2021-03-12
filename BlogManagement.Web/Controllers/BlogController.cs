@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using BlogManagement.DataAccess.DTO.Response;
 using BlogManagement.Services;
+using Microsoft.Extensions.Logging;
 
 namespace BlogManagement.Controllers
 {
@@ -16,11 +17,13 @@ namespace BlogManagement.Controllers
     {
         private readonly IBlogRepository _blogRepository;
         private readonly IBlogService _blogService;
+        private readonly ILogger<BlogController> _logger;
 
-        public BlogController(IBlogRepository blogRepository, IBlogService blogService)
+        public BlogController(IBlogRepository blogRepository, IBlogService blogService, ILogger<BlogController> logger)
         {
             _blogRepository = blogRepository;
             _blogService = blogService;
+            _logger = logger;
         }
 
         #region Blog
@@ -44,6 +47,7 @@ namespace BlogManagement.Controllers
         [Route("{blogId}/Posts")]
         public async Task<ActionResult<IEnumerable<PostViewModel>>> GetBlogPosts([FromRoute]int blogId)
         {
+            _logger.LogInformation($"Get posts for blogId {blogId}", blogId);
             var result = await _blogService.GetBlogPosts(blogId);
             if (result == null) return NotFound($"Blog with id {blogId} is not exist");
             return Ok(result);
