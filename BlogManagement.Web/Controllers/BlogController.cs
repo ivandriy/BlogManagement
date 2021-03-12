@@ -47,10 +47,12 @@ namespace BlogManagement.Controllers
         [Route("{blogId}/Posts")]
         public async Task<ActionResult<IEnumerable<PostViewModel>>> GetBlogPosts([FromRoute]int blogId)
         {
-            _logger.LogInformation($"Get posts for blogId {blogId}", blogId);
-            var result = await _blogService.GetBlogPosts(blogId);
-            if (result == null) return NotFound($"Blog with id {blogId} is not exist");
-            return Ok(result);
+            using (_logger.BeginScope($"Get posts for blogId {blogId}", blogId))
+            {
+                var result = await _blogService.GetBlogPosts(blogId);
+                if (result == null) return NotFound($"Blog with id {blogId} is not exist");
+                return Ok(result);
+            }
         }
         
         [HttpPost]

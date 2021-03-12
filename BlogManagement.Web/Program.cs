@@ -19,7 +19,7 @@ namespace BlogManagement
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                 .Enrich.FromLogContext()
-                .WriteTo.Console(new CompactJsonFormatter())
+                .WriteTo.Console()
                 .CreateBootstrapLogger();
             try
             {
@@ -44,7 +44,7 @@ namespace BlogManagement
                     .ReadFrom.Configuration(context.Configuration)
                     .ReadFrom.Services(services)
                     .Enrich.FromLogContext()
-                    .WriteTo.Console(new CompactJsonFormatter()))
+                )
                 .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
     }
 }
